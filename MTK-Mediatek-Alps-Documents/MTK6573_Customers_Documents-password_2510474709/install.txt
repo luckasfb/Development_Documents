@@ -1,0 +1,45 @@
+http://www.swdn.net/soft_xq.asp?id=298&soft_id=4949
+
+输入关键字在本站 29727 个海量源码库中尽情搜索： 		 
+
+文件名称：2510474709.zip    下载     
+	所属分类：【 Android书籍教程 】
+开发平台： pdf
+大 小：  16,091.00  KB
+上传时间： 2012-2-25 11:40:20
+下载次数： 108
+资料提供者：sunday 
+详细说明：Android mtk内部 驱动文档，吐血奉献！！绝对经典的Android驱动学习资料，总共 23个pdf，这是Android 驱动开发的必备宝典！！ 文档密码： 2510474709
+
+ [上传源码成为会员下载此文件] [成为VIP会员下载此文件]
+
+[ 2510474709.zip ] --- 压缩文件目录结构： 
+.........\Drivers
+.........\.........\Android sensor customization.pdf
+.........\.........\Android sensor customization_36MP.pdf
+.........\.........\Android+SD+upgrade+application+note.zip
+.........\.........\Android+sensor+customization.zip
+.........\.........\Android+sensor+customization_36MP.zip
+.........\.........\Bluetooth_HCI_Transport_Driver_Customer_Document_v3.0.zip
+.........\.........\Linux+Device+Model+Customer+Document.zip
+.........\.........\MT5931+Feature+Patch+CR+ID.zip
+.........\.........\MT5931_WiFi_MTK_SP_NVRAM.zip
+.........\.........\MT6573 Yusu GPIO Customer Document.pdf
+.........\.........\MT6573+I2C+Customer+Document.zip
+.........\.........\MT6573+Yusu+GPIO+Customer+Document.zip
+.........\.........\MT6573_Battery_Customer+Document.zip
+.........\.........\MT6573_PMU_Customer+Document.zip
+.........\.........\MT6573_Power+off+Charging+Specification+Customer+Document.zip
+.........\.........\MT6620+SOP+of+changing+Wi-Fi+support+channels.zip
+.........\.........\MT6620_MAC_Address_Flow_20110727.zip
+.........\.........\MT6620_WiFi_MTK_SP_NVRAM.zip
+.........\.........\The+Improvement+of+NvRam+in+Android+2.2+or+later.zip
+.........\.........\Yusu Touch Panel Customer Document.pdf
+.........\.........\Yusu+Jogball+Customer+Document.zip
+.........\.........\YuSu+Keypad+Customer+Document.zip
+.........\.........\YuSu+MT6620+Wi-Fi+driver+Customer+Document.zip
+.........\.........\Yusu+OFN+Customer+Document.zip
+.........\.........\YuSu+RTC+Customer+Document.zip
+.........\.........\Yusu+SPI+Customer+Document.zip
+.........\.........\Yusu+Touch+Panel+Customer+Document.zip
+ 
