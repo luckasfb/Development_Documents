@@ -1,0 +1,25 @@
+What is the main function of the MT6329 on HOMEKEY
+The key I never use, download, or into the factory mode are not used.
+
+ I doubt if he want to use, you may not need to configure the HOME key role.
+ And do not need to modify any code, you can wake up the system in SLEEP state.
+
+ The above is guess. . I wait for the next test, I guess.
+
+This key can be equipped with imaging of other keys mode, to look at the code inside is not integrated into the check switch KPD_HOMEKEY_USE_PMIC
+
+The specific mapping where a button through macro: KPD_PMIC_HOMEKEY_MAP corresponding.
+
+Do not know specifically why use did not pick out used
+
+Can be used when the general use of the keys, but said the response the same way, for when the use of the general key trigger level software settings!
+
+I looked at the data, as we can do for software reset. . This issue behind me look new.
+ Press this HOME with the POWER KEY 10S phone will restart at the same time, mainly to solve the battery can not pull out the phone freezes.
+
+This key hardware and Powerkey similar specific uses that can be customized.
+
+Yes, HOME POWER KEY while pressing 10S phone will automatically power down
+
+The HOME + OWER KEY can be reset
+ 

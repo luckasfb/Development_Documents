@@ -1,0 +1,299 @@
+[GPIO_variables]
+;Bluetooth disconnect pin for BCHS
+gpio_bt_dsc_pin
+;Bluetooth data selection pin for BCHS. Should be GPI.
+gpio_bt_dataselect_pin
+;Bluetooth power on pin for BCHS, RFMD, GORM
+@gpio_bt_power_pin
+;Bluetooth reset pin for BCHS, GORM
+@gpio_bt_reset_pin
+;Bluetooth ext 32k pin for RFMD, GORM.
+@gpio_bt_32k_pin
+;Bluetooth uart tx pin for RFMD, GORM.
+@gpio_bt_utxd3_pin
+;Bluetooth uart rx pin for RFMD, GORM.
+@gpio_bt_urxd3_pin
+;Bluetooth uart rts pin for RFMD, GORM.
+@gpio_bt_urts3_pin
+;Bluetooth uart cts pin for RFMD, GORM.
+@gpio_bt_ucts3_pin
+;Bluetooth pcm clk pin for RFMD, GORM.
+@gpio_bt_pcmclk_pin
+;Bluetooth pcm sync pin for RFMD, GORM.
+@gpio_bt_pcmsync_pin
+;Bluetooth pcm data input pin for RFMD, GORM.
+@gpio_bt_pcmin_pin
+;Bluetooth pcm data output pin for RFMD, GORM.
+@gpio_bt_pcmout_pin
+;Bluetooth wake up pin for RFMD
+gpio_bt_wakeup_pin
+;
+;gpio RF control pins. Please refer to m12190.c, m12196.c
+gpio_rf_control1_pin
+gpio_rf_control2_pin
+gpio_rf_control3_pin
+;
+gpio_flash_test_cmd_bit0_pin
+gpio_flash_test_cmd_bit1_pin
+gpio_flash_test_reset_pin
+gpio_flash_test_error_ind_pin
+;
+gpio_ic_module_ready_bot_pin
+gpio_ic_module_ready_eot_pin
+gpio_ic_module_ready_bin_pin
+;
+;For motion sensor spi pins: motion_sensor_hw_define.h
+gpio_ms_spi_din_pin
+gpio_ms_spi_clk_pin
+gpio_ms_spi_dout_pin
+gpio_ms_spi_cs_pin
+gpio_ms_spi_reset_pin
+;
+;For motion sensor I2C pins: motion_sensor_hw_define.h
+gpio_ms_i2c_addr_pin
+gpio_ms_i2c_clk_pin
+gpio_ms_i2c_data_pin
+gpio_ms_i2c_cs_pin
+gpio_ms_i2c_reset_pin
+;For motion sensor MEMSIC serial interface: motion_sensor_hw_define.h
+gpio_acc_sensor_sck_pin
+gpio_acc_sensor_sda_pin
+;
+;For e_compass serial interface: e_compass_sensor_hw_define.h
+@gpio_e_compass_sensor_sck_pin
+@gpio_e_compass_sensor_sda_pin
+@gpio_e_compass_sensor_pwr_pin
+;
+;For BMT charging control ON/OFF pin: pwic.c
+gpio_bmt_chr_ctrl_pin
+;For doing something whenever AC is plug-in: chr_parameter.c
+gpio_bmt_charger_action_pin
+;For dectection USB or AC: char_parameter.c
+gpio_bmt_check_ac_usb_pin
+;
+;For IrDA mode switch: irda_custom.c
+gpio_irda_mode_switch_pin
+;
+;For touch panel SPI pins: touch_panel_spi.h
+gpio_tp_spi_din_pin
+gpio_tp_spi_clk_pin
+gpio_tp_spi_dout_pin
+gpio_tp_spi_cs_pin
+gpio_tp_spi_busy_pin
+;
+;For USB power control: usb_custom.c
+gpio_usb_enable_pin
+gpio_otg_vbus_enable_pin
+; In USB2.0, to switch on/off the external 100K ohm resistor for the dectection of USB or charger
+gpio_usb_chr_det_switch_pin
+;
+;For enable USBDL
+@gpio_usbdl_pin
+;
+;For FM control pins: see MCU\CUSTOM_BACKUP\AUDIO\PROJECT_NAME\XXX.c
+gpio_fm_3wire_le_pin
+gpio_fm_i2c_sda_pin
+gpio_fm_i2c_scl_pin
+gpio_fm_ext_switch_pin
+gpio_fm_bus_enable_pin
+gpio_fm_srclkena_pin
+gpio_fm_32k_pin
+;
+;To turn on/off external amplifier: afe.c
+gpio_afe_amplifier_pin
+gpio_afe_amplifier_pin1
+;
+;For audio EXT_DAC_SUPPORT: ext_dac_drv.c
+gpio_ext_dac_sclk_pin
+gpio_ext_dac_sdin_pin
+gpio_ext_dac_csb_pin
+gpio_ext_dac_switch_pin
+;
+;For Main LCD backlight LED: uem_gpio.c
+gpio_led_mainbl_en_pin
+;For sub LCD backlight LED: uem_gpio.c
+gpio_led_subbl_en_pin
+;For general LED: uem_gpio.c
+gpio_led_status_en_pin
+;For Red LED: uem_gpio.c
+gpio_led_status1_en_pin
+;For Green LED: uem_gpio.c
+gpio_led_status2_en_pin
+;For Blue LED: uem_gpio.c
+gpio_led_status3_en_pin
+;For keypad backlight LED: uem_gpio.c
+gpio_led_keybl_en_pin
+gpio_led_keybl2_en_pin
+;For enable/disable vibration: uem_gpio.c
+gpio_vibrator_en_pin
+;
+;For flash light control: uem_gpio.c, camera_hw.c
+gpio_flashlight_en_pin
+;
+;To enable camera AF function: camera_hw.c
+gpio_af_enable_pin
+;Camera control pins: camera_hw.c, camera_para.c
+gpio_camera_power_en_pin
+gpio_camera_reset_pin
+gpio_camera_cmpdn_pin
+gpio_camera_cmpdn_pin1
+gpio_camera_mclk_pin
+;
+;Camera module control pins: for example, PAP1320_custom.h
+gpio_camera_module_power_pin
+gpio_camera_module_reset_pin
+gpio_camera_module_ready_pin
+;
+;SCCB pins: sccb.h
+gpio_sccb_serial_clk_pin
+gpio_sccb_serial_data_pin
+;
+;TV out swtich pin: auxmain.c
+gpio_tv_out_switch_pin
+;
+;WIFI enable pin: gl_hpi.c
+@gpio_wifi_enable_pin
+;WiF EINT enable pin
+@gpio_wifi_eint_enable_pin
+;WiFi ext 32k pin
+@gpio_wifi_32k_pin
+;WiFi ext reset pin
+@gpio_wifi_ext_rst_pin
+;
+;USB/UART switch pin: usb_custom.c
+gpio_usb_uart_switch_pin
+gpio_earphone_usb_uart_switch_pin
+;
+;UART enable pin: auxmain.c
+gpio_uart_enable_pin
+;
+;specify GPIO pin for 32KHz clock output
+gpio_32k_ctrl_pin
+;
+;simplus related pins
+gpio_simplug_ldo_switch
+gpio_sim_msdc_switch
+gpio_ext_sd_ldo_switch
+;
+;SW T_flash related pins
+gpio_t_card_ldo_switch
+;
+;touchpad power pins: touchpad_custom.h
+gpio_touchpad_ldo_pw_pin
+gpio_touchpad_low_pw_pin
+;
+;GPS power on pin
+@gpio_gps_power_pin
+;GPS reset pin
+@gpio_gps_reset_pin
+;GPS standby pin
+@gpio_gps_standby_pin
+;GPS sync pin
+@gpio_gps_sync_pin
+;GPS ext 32k pin
+@gpio_gps_32k_pin
+;GPS uart tx pin
+@gpio_gps_utxd_pin
+;GPS uart rx pin
+@gpio_gps_urxd_pin
+;GPS uart rts pin
+@gpio_gps_urts_pin
+;GPS uart cts pin
+@gpio_gps_ucts_pin
+;
+;TDMB Power and Control Pin
+@gpio_tdmb_power_pin
+gpio_tdmb_spi_reset_pin
+gpio_tdmb_spi_eint_pin
+;
+;MT6302 SPI CS pins
+@gpio_MT6302_cs_pin
+;MT6302 SPI clk pins
+@gpio_MT6302_clk_pin
+;MT6302 SPI data pins
+@gpio_MT6302_dat_pin
+;
+;USB EDGE card 2-step current limit
+@gpio_edgecard_current_limit_pin
+
+;For XENON flash light control
+gpio_xenon_flash_on_pin
+gpio_xenon_charge_pin
+gpio_xenon_trigger_pin
+gpio_xenon_ready_pin
+
+;For CMMB I2C control pin
+gpio_cmmb_reset_pin
+gpio_cmmb_i2c_sda_pin
+gpio_cmmb_i2c_scl_pin
+gpio_cmmb_power_on_pin
+gpio_cmmb_ap_en_pin
+@gpio_cmmb_spi_eint_pin
+gpio_cmmb_spi_cs_n_pin
+gpio_cmmb_spi_sck_pin
+gpio_cmmb_spi_mosi_pin
+gpio_cmmb_spi_miso_pin
+
+;For LCD TE control pin
+gpio_lcd_te_pin
+
+;For Direct Sensor
+gpio_dcam_lcd_cs_pin
+gpio_dcam_lcd_rd_pin
+
+;For PMU with External Charger
+gpio_ext_chr_ctrl_pin
+gpio_ext_chr_iset_ctrl_pin
+
+;For general purpose debug
+gpio_reserve0_pin
+gpio_reserve1_pin
+gpio_reserve2_pin
+gpio_reserve3_pin
+gpio_reserve4_pin
+gpio_reserve5_pin
+gpio_reserve6_pin
+gpio_reserve7_pin
+gpio_reserve8_pin
+gpio_reserve9_pin
+gpio_reserve10_pin
+gpio_reserve11_pin
+gpio_reserve12_pin
+gpio_reserve13_pin
+gpio_reserve14_pin
+gpio_reserve15_pin
+
+;For kbdmain_joustick
+gpio_ball_scl_pin
+gpio_ball_sda_pin
+gpio_ball_en_pin
+
+;For BT co_clock
+@gpio_bt_co_clock_pin   
+
+gpio_muic_sccb_sda_pin
+gpio_muic_sccb_scl_pin
+
+;For TWOMICNR I2C control pin
+gpio_2micNR_scl_pin
+gpio_2micNR_sda_pin
+gpio_2micNR_bypass_pin
+gpio_2micNR_13mhz_pin
+gpio_2micNR_rst_pin
+gpio_2micNR_pwdn_pin
+
+
+
+[gpio_drv.h_HEADER]
+#ifndef _GPIO_DRV_H
+#define _GPIO_DRV_H
+
+[gpio_drv.h_TAILER]
+#endif /* _GPIO_DRV_H */
+
+[gpio_var.c_HEADER]
+#ifdef __CUST_NEW__
+#include "gpio_drv.h"
+
+[gpio_var.c_TAILER]
+#endif /* __CUST_NEW__ */

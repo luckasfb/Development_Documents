@@ -1,0 +1,74 @@
+电的方案有三种：
+ 1. 单独按power key
+ 2. 单独按home key
+ 3. 组合键：power key + home key
+
+ 硬件掉电重启分为两个步骤：先掉电，然后重启。所以如果您只单独设置为用home key来掉电，系统掉电之后，不会重启。因此，如果您按这些键的时间掌握的好的话，您会发现系统会掉电，不会重启。
+
+ 建议使用方案1和方案3，下面将列举方案1和方案3的设置：
+
+ 方案1：
+ 1）preloader的设置：
+ （1）.您可以在preload里面对该寄存器进行设置。 时间默认是8s——>这个时间只是掉电的时间，8s之后系统会掉电。如果要让系统重新启动，您需要多按2s。
+ 请在alps\mediatek\platform\mt657*\preloader\src\drivers\Mt657*_pmic6329.c 文件中加入如下函数：
+ int hard_interrupt_reset(){
+   U8 chip_slave_address = 0xC2;
+     U8 cmd = 0x0C;
+    int cmd_len = 1;
+     U8 data = 0xFF;
+     int data_len = 1;
+    U32 result_tmp;
+      U8 val=0x1;
+     U8 MASK=0x1;
+     U8 SHIFT=0x4;
+     result_tmp = pmic6329_i2c_read(chip_slave_address, &cmd, cmd_len, &data, data_len);
+     data &= ~(MASK << SHIFT);
+     data |= (val << SHIFT);
+     result_tmp = pmic6329_i2c_write(chip_slave_address, &cmd, cmd_len, &data, data_len);
+    return result_tmp ;
+   }
+ （2）.然后在int hw_check_battery(void)这个函数中变量后面调用该函数。
+ 这样在uboot里面硬件掉电就会起作用的。
+
+
+ 2）kernel的设置：
+
+ mediatek\platform\mt657*\kernel\drivers\keypad\kpd.c
+       the definition is as below:
+   #ifdef KPD_PMIC_LPRST_TD
+ upmu_testmode_pwrkey_rst_en(0x01);   //enable pwrkey
+ upmu_testmode_homekey_rst_en(0x0);   //disable homekey
+ upmu_testmode_pwrkey_rst_td(KPD_PMIC_LPRST_TD); /tting timer,default 5s
+
+ 3）请修改 mediatek\platform\mt657*\preloader\src\drivers\mt657*_key.c 中 mt657*_detect_key（）如下：
+      
+       if(get_pmic6329_chip_version() == PMIC6329_E2_CID_CODE)
+ {
+            pmic_read_interface(0x15, &just_rst, 0x01, 0x07);
+            if(0)   //=======Modify this line=========
+            {
+                     printf("Just recover from a reset, bootup anyway\n"); 
+                     return true;
+            }
+ }
+ 方案3：
+
+ 1）preloader的设置：
+
+ 设置步骤与方案1一样，只是需要修改如下参数：
+
+    U8 val=0x3;
+     U8 MASK=0x3;
+     U8 SHIFT=0x3;
+
+ 2）kernel的设置：
+
+ 与方案1的区别设置如下：
+
+ upmu_testmode_homekey_rst_en(0x01);   //enable homekey  
+
+ 其他的设置一样。
+
+ 3）设置与方案1相同。
+ 奇怪！power key与PMIC的home key 在手机死机时同时按下不实现复位
+ 

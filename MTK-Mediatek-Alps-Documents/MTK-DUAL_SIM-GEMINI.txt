@@ -1,0 +1,15 @@
+But the the mtk release the document inside so modified
+GEMINI Only support On switch to Off "[Dual SIM]:
+ GEMINI = yes
+ MTK_GEMINI_ENHANCEMENT = yes
+ MTK_GEMINI_3G_SWITCH = yes
+ MTK_SHARE_MODEM_SUPPORT = 2
+ MTK_SHARE_MODEM_CURRENT = 2
+
+ [Single SIM]:
+ GEMINI = no
+ MTK_GEMINI_ENHANCEMENT = no
+ MTK_GEMINI_3G_SWITCH = no
+ MTK_SHARE_MODEM_SUPPORT = 1
+ MTK_SHARE_MODEM_CURRENT = 1 
+ 

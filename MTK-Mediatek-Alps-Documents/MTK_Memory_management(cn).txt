@@ -1,0 +1,437 @@
+MTK 手机用的操作系统是 nucleus, 这是一个rtfs(实时操作系统)，这个rtfs本身是不带内存管理功能，所以MTK自己写的内存管理。
+
+(nucleus在系统初始化完毕时，会调用Application_Initialize，参数就是可使用内存的起始地址)
+
+大体上来分，MTK内存可以分为3种：
+
+control buffer 
+ 平常使用的OslMalloc就是这个内存。
+
+ 这个内存内部实现是按块来划分的(pool)，具体的配置可以custom_config.c 文件里的custom_config_ctrl_buff_info()里看到
+
+ 里面的size 指定了这个块的大小，no_of_buff 指定了有多少个这样的块。
+
+ 按块来管理内存，可以有效地控制内存的碎片，管理也相对简单，可能会造成内存的一些浪费
+
+ 对于手机这种需要长时间运行不重起的设备来说，还是很有必要的。
+
+ MTK 默认最大块的大小为 2048byte，也就是2k。这就是说用OslMalloc 分配内存默认最大能分配到2k，
+
+ 这个可以看custom_config_ctrl_buff_info()配置可以看到。
+
+ 可以通过修改里面的配置来改变这个值，不过一般不这么做，因为MTK提供了其他的内存管理方式
+
+ 
+
+system buffer 
+ system buffer 平时我们用不到，听名字也是系统使用的。
+
+ 主要是提供 run-time usage,是一块 semi-static memory(什么意思？)
+
+     比如 block of task, task stack ,control block of control buffer ,buffer pool等等
+
+     在 custom_config.c里面配置 ，主要有两个宏 GLOBAL_MEM_SIZE  和 GLOBAL_DEBUG_MEM_SIZE
+     两个 static 数组 static kal_uint32 System_Mem_Pool[GLOBAL_MEM_SIZE/sizeof(kal_uint32)];  
+     和                     static kal_uint32 Debug_Mem_Pool[GLOBAL_DEBUG_MEM_SIZE/sizeof(kal_uint32)];
+
+     为了满足时间要求，也就是要求快速分配，系统内存又分为 internal system memory 和 system memory
+     前者link 到 internal SRAM ,后者link 到 external SRAM
+
+app buffer 
+ app的内存是使用通过MTK 提供的一种ADM(application dynamic memory)机制来实现，ADM 主要的功能是通过管理一个数组来实现内存的分配。
+
+ ADM 也是通过内存块(pool)来实现的，具体无法看到其代码。app通过这个adm这个机制，可以更加灵活的使用内存，比如分配大内存(大于2k)等等
+
+ 主要函数
+
+
+ 创建 adm
+ KAL_ADM_ID kal_adm_create(void *mem_addr, kal_uint32 size, kal_uint32 *subpool_size, kal_bool islogging);
+
+ 删除函数
+ kal_status kal_adm_delete(KAL_ADM_ID adm_id);
+
+ 分配函数 
+ extern void *kal_adm_internal_alloc(KAL_ADM_ID adm_id, kal_uint32 size, char *filename, kal_uint32 line);
+ #define kal_adm_alloc(adm_id, size) kal_adm_internal_alloc(adm_id, size, __FILE__, __LINE__)
+
+ 释放函数
+ extern void kal_adm_free(KAL_ADM_ID adm_id, void *mem_addr);
+
+
+在 MTK 内存管理简单总结  中，大体说了MTK的三种内存分配方式，对于第三种，也就是app buffer，是比较丰富的一种。
+
+在 MTK 平台中也有许多具体的实现。在代码里搜索一下 kal_adm_create 就可以发现有许多地方使用了。
+
+看一个比较典型的使用：
+
+在文件app_mem.c里，有两个memory pool，一个是用于应用之间共享内存，另一个是用于屏幕内存。
+
+第一种内存，主要是用于各种应用之间共享内存(以下简称ASM)，这样可以节省内存，MTK实现了一种机制，可以在多个应用之间共享内存
+
+当当前应用想获得的共享内存不足时，MTK会通知后台应用释放相应的内存。这套机制在AppMemMgr.c里面实现。
+
+先看一下初始化该内存次池函数 
+
+void applib_mem_ap_init(void (*stop_finish_callback_by_MMI)(kal_uint32 app_id, kal_uint32 string_id, kal_bool result))
+
+这个函数带有一个参数，这个参数是一个函数指针，该回调函数有3个参数，app_id,(应用id),string_id 和 result。
+
+这个回调函数比较特别，是当一个后台应用 被 要求释放内存，释放完毕后调用的。
+
+为什么要搞这么一个函数，因为一些应用比较复杂，释放内存的同时需要关闭一些资源，而这些动作是异步的，
+
+等这些异步发的操作多完成时，调用一些函数，告诉ASM，内存释放完毕。
+
+ 
+
+具体实现：通过 调用 kal_adm_create 来创建一个内存池，然后保存了一些回调函数，没有什么特别的地方，
+
+内存池的大小 是 APPLIB_MEM_AP_POOL_SIZE 来确定的，可以通过修改 app_asm_pool_union 来修改内存池的大小。
+
+ 
+
+应用分配内存
+
+void *applib_mem_ap_alloc(kal_uint32 app_id, kal_uint32 mem_size)
+
+应用通过上面的函数来获得ASM的内存，参数一 app_id，是当前分配内存的id，这个id需要自己定义，并且注册(下文说明)，
+
+参数二是实际需要分配的内存大小。
+
+具体实现：先mem_size 进行了处理，让其四字节对齐。然后通过 kal_adm_alloc 获得内存，不过这个内存加上了一个头结构和尾结构，
+
+(头和尾都加入了特殊字符，再释放时进行检查，这个可以判断内存是否越界)。然后把这个内存插入到list的头部。
+
+ 
+
+主要进行了3步：
+
+static void applib_mem_ap_free_int(void *mem_ptr)
+{
+    /*----------------------------------------------------------------*/
+    /* Local Variables                                                */
+    /*----------------------------------------------------------------*/
+    applib_mem_header_struct *header, *prev_node, *remove_node;
+    applib_mem_footer_struct *footer;
+
+    /*----------------------------------------------------------------*/
+    /* Code Body                                                      */
+    /*----------------------------------------------------------------*/
+    if (g_applib_mem_cntx.app_pool_id)    /* Normal mode */
+    {
+        ASSERT(mem_ptr && APPLIB_MEM_ALIGNED_4(mem_ptr));
+        
+        header = ((applib_mem_header_struct*) mem_ptr) - 1;
+        footer = (applib_mem_footer_struct*) (((char*)mem_ptr) + header->chunk_size);
+
+        ASSERT(APPLIB_MEM_COMP_PATTERN(header->guard_pattern, APPLIB_MEM_HEADER_PATTERN1) && 
+               APPLIB_MEM_COMP_PATTERN(footer->guard_pattern, APPLIB_MEM_FOOTER_PATTERN1));
+
+        /* 
+         * Remove the block from linked list 
+         *
+         * It is not a fast algorithm, we can improve it by using double linked list, 
+         * but we choose simpler design because
+         * 1. Typically total allocation count is small
+         * 2. We don't want to increase space overheads
+         * 3. We don't want to access KAL ADM internal data structure
+         */
+        prev_node = &g_applib_mem_cntx.app_head;    
+        ASSERT(prev_node->next);
+        for (remove_node = prev_node->next;
+             remove_node; 
+             prev_node = remove_node, remove_node = prev_node->next)
+        {
+            if (remove_node == header)
+            {
+                break;
+            }
+        }
+        ASSERT(remove_node);
+        prev_node->next = remove_node->next;
+        
+        /* Set guard pattern */
+        APPLIB_MEM_SET_PATTERN(header->guard_pattern, APPLIB_MEM_HEADER_PATTERN2);    
+        APPLIB_MEM_SET_PATTERN(footer->guard_pattern, APPLIB_MEM_FOOTER_PATTERN2);
+
+        /* Release the block */
+    #ifdef APPLIB_MEM_USE_ADM
+        kal_adm_free(g_applib_mem_cntx.app_pool_id, header);
+    #else 
+        free(header);
+    #endif 
+
+        ASSERT(g_applib_mem_cntx.app_alloc_count > 0);
+        g_applib_mem_cntx.app_alloc_count--;
+    }
+    else /* Full pool mode */
+    {
+        ASSERT(mem_ptr == g_applib_mem_ap_pool && g_applib_mem_cntx.app_alloc_count == 1);
+        g_applib_mem_cntx.app_alloc_count = 0;
+        g_applib_mem_cntx.app_id_of_full_pool = APPLIB_MEM_AP_ID_DUMMY; /* 0 */
+        
+    #ifdef APPLIB_MEM_USE_ADM    
+        g_applib_mem_cntx.app_pool_id = kal_adm_create(
+                                            g_applib_mem_ap_pool,
+                                            APPLIB_MEM_AP_POOL_SIZE,
+                                            (kal_uint32*) g_applib_mem_pool_chunk_size,
+                                            KAL_FALSE);
+    #else /* APPLIB_MEM_USE_ADM */
+        g_applib_mem_cntx.app_pool_id = APPLIB_DUMMY_POOL_ID;
+    #endif /* APPLIB_MEM_USE_ADM */
+    }
+}
+
+取得内存的头部和尾部，(调试版本可以判断内存是否越界) 
+从链表中删除这个节点 
+调用 kal_adm_free 释放内存 
+在MTK 内存管理简单总结 2 提到调用 applib_mem_ap_alloc 分配内存是需要一个应用id，这个id是需要自己增加，
+
+而且在调用这个函数之前必须 调用 applib_mem_ap_register 注册这个id。需要注意的是最后一个参数，是一个回调函数，
+
+这个回调函数是在共享内存不够使用时，ASM会调用这个函数，告诉应用需要释放共享内存，供其它应用使用。
+
+增加 id  在 app_mem.h 的 applib_mem_ap_id_enum 里面，只要添加一个id就可以。
+
+ 
+
+同样 屏幕内存也是通过ADM来管理，屏幕内存 是用来 创建 layer 用的，在MTK的某个版本开始，创建layer的内存是有要求的，
+
+需要applib_mem_screen_alloc 分配的内存。 
+
+MTK的ASM一套内存管理机制，也就是当共享内存不足时，可以要求后台应有释放共享内存，从而来保证应用的正常运行。
+
+这套机制的实现在AppMemMgr.c里面，下面具体分析一下。
+
+1 mmi_frm_appmem_prompt_to_release_mem，
+
+当调用 applib_mem_ap_alloc 分配共享内存失败时，调用该函数，弹出“内存不足(out of memory)”提示框，
+
+让用户选择想要停止得后台应用程序来释放内存。
+
+mmi_frm_appmem_prompt_to_release_mem
+void mmi_frm_appmem_prompt_to_release_mem(
+        MMI_ID_TYPE app_name, 
+        MMI_ID_TYPE app_icon, 
+        U32 required_size,
+        void (*success_callback)(void))
+{
+
+    MMI_ASSERT(required_size <= applib_mem_ap_get_pool_size());
+
+    //防止重复进入
+    if (mmi_frm_appmem_is_in_prompt_screens() || mmi_frm_appmem_is_prompt_screens_in_history())
+    {
+        DisplayPopup((PU8) GetString(STR_ID_APPMEM_OUT_OF_MEMORY), IMG_GLOBAL_WARNING, 0, 1000, (U8) WARNING_TONE);
+        return;
+    }
+
+    //保存想关信息
+    /* Note the context g_mmi_frm_appmem_prompt is not reset  */
+    g_mmi_frm_appmem_prompt.app_name = app_name;
+    g_mmi_frm_appmem_prompt.app_icon = app_icon;
+    g_mmi_frm_appmem_prompt.required_size = required_size;
+    g_mmi_frm_appmem_prompt.require_full_pool = MMI_FALSE;    
+    g_mmi_frm_appmem_prompt.stop_state = MMI_FRM_APPMEM_STOP_STATE_IGNORE;
+    g_mmi_frm_appmem_prompt.keep_prompt_screen_in_history = MMI_TRUE;
+    g_mmi_frm_appmem_prompt.success_callback = success_callback;
+
+    //这个是真正显示函数
+    mmi_frm_appmem_entry_prompt_screen();
+}这个函数里只是初始化了些信息和保存了参数，参数 app_name 和 app_icon 是应有的名称和图片id，required_size是需要获得内存的大小，success_callback 是当释放内存完毕后，会回调这个函数。 2，mmi_frm_appmem_entry_prompt_screen 显示使用ASM共享内存的后台应用程序，让用户选择关闭mmi_frm_appmem_entry_prompt_screenstatic void mmi_frm_appmem_entry_prompt_screen(void)
+{
+
+    U8 *guiBuffer;
+    S32 info_box_height;
+    MMI_BOOL bShowPromptScr;
+
+    MMI_ASSERT(g_mmi_frm_appmem_prompt_screen == NULL);
+
+    bShowPromptScr = !mmi_frm_appmem_check_enough_memory() || 
+                        mmi_is_redrawing_bk_screens(); /* redrawn by small screen */
+
+    MMI_TRACE(MMI_FW_TRC_G1_FRM, MMI_FRM_ASM_ENTRY_PROMPT_SCREEN, bShowPromptScr);
+    
+    if (bShowPromptScr)
+    {
+        //进入new Screen
+        EntryNewScreen(SCR_APPMEM_STOP_PROMPT, mmi_frm_appmem_exit_prompt_screen, NULL, NULL);     
+
+        guiBuffer = GetCurrGuiBuffer(SCR_APPMEM_STOP_PROMPT);
+
+        g_mmi_frm_appmem_prompt_screen = 
+            (mmi_frm_appmem_prompt_screen_struct*) OslMalloc(sizeof(mmi_frm_appmem_prompt_screen_struct));
+       
+        //获得后台运行的应有个数(这里说到app都是使用共享内存的)
+        //以及后台应有的列表
+        g_mmi_frm_appmem_prompt_screen->num_app = 
+            (S32) applib_mem_ap_get_current_usage(
+                    g_mmi_frm_appmem_prompt_screen->applist,
+                    MMI_FRM_APPMEM_MAX_APP_PROMPTED);
+
+        info_box_height = mmi_frm_appmem_prompt_screen_init_info();        
+
+        RegisterHighlightHandler(mmi_frm_appmem_prompt_screen_highlight_hdlr);
+        
+        //显示屏幕
+        ShowCategory211Screen(
+            STR_ID_APPMEM_OUT_OF_MEMORY,
+            0, 
+            STR_GLOBAL_STOP,
+            0, 
+            STR_GLOBAL_BACK, 
+            0, 
+            g_mmi_frm_appmem_prompt_screen->num_app, 
+            mmi_frm_appmem_prompt_screen_get_item, 
+            NULL, 
+            mmi_frm_appmem_prompt_screen_draw_info,
+            mmi_frm_appmem_prompt_screen_hide_info,
+            info_box_height,            /* Info box height */
+            0,                          /* Background image of info box */
+            0,                          /* Highlight item index */
+            guiBuffer);
+
+       SetRightSoftkeyFunction(GoBackHistory, KEY_EVENT_UP);
+    }
+    else
+    {
+        DisplayPopupCallBack(
+            (U8*) GetString(STR_ID_APPMEM_NOTIFY_STARTING_NEW), 
+            IMG_GLOBAL_INFO, 
+            0, 
+            UI_POPUP_NOTIFYDURATION_TIME_2000, 
+            SUCCESS_TONE, 
+            mmi_frm_appmem_invoke_release_mem_success_callback);
+    }
+}3 applib_mem_ap_get_current_usage 这个函数是获得当前正在后台运行的应有程序   可以获得应用的name，icon，使用的内存大小。applib_mem_ap_get_current_usage
+kal_uint32 applib_mem_ap_get_current_usage(applib_mem_ap_usage_struct *applist, kal_uint32 max_items)
+{
+     kal_int32 item_count;
+    applib_mem_header_struct *node;
+    
+     APP_ASM_LOCK;
+    if (g_applib_mem_cntx.app_pool_id)  /* Normal mode */
+    {
+        //app_head 是一个list，每一调用 applib_mem_ap_alloc 函数，都会把当分配的内存以及想关信息
+        //插入到list的头部
+        item_count = 0;
+        node = g_applib_mem_cntx.app_head.next;
+        //遍历list
+        while (node)
+        {
+            kal_int32 idx;
+            //从要显示的app list 查找 使用当前node的app是否在显示app list里
+            for (idx = 0; idx < item_count; idx++)
+            {
+                if (applist[idx].app_id == node->owner_id)
+                {
+                    break;
+                }
+            }
+            
+            //发现新app
+            if (idx == item_count)
+            {
+                //是否达到要显示app的最大个数
+                if (item_count == max_items)
+                {
+                    node = node->next;
+                    continue;
+                }
+                else
+                {
+                    //填充新app相应的信息
+                    applist[item_count].app_id = node->owner_id;
+                    applist[item_count].string_id = g_applib_mem_cntx.app_names[node->owner_id];
+                    applist[item_count].icon_id = g_applib_mem_cntx.app_icons[node->owner_id];
+                    applist[item_count].mem_size = 0;
+                    applist[item_count].is_stopping = g_applib_mem_cntx.app_is_stopping[node->owner_id];
+                    item_count++;
+                }
+            }
+
+            //增加该app的使用的内存数量
+            applist[idx].mem_size += node->chunk_size + APPLIB_MEM_CHUNK_EXTRA_SIZE;
+            
+            node = node->next;
+        }
+    }
+    else  /* Full pool mode */
+    {
+        item_count = 0;
+        if (g_applib_mem_cntx.app_alloc_count)
+        {
+            kal_uint32 app_id = g_applib_mem_cntx.app_id_of_full_pool;
+            applist[item_count].app_id = app_id;
+            applist[item_count].string_id = g_applib_mem_cntx.app_names[app_id];
+            applist[item_count].icon_id = g_applib_mem_cntx.app_icons[app_id];
+            applist[item_count].mem_size = APPLIB_MEM_AP_POOL_SIZE;
+            applist[item_count].is_stopping = g_applib_mem_cntx.app_is_stopping[app_id];
+   item_count++;
+        }
+    }
+    APP_ASM_UNLOCK;
+    
+    return item_count;
+}
+
+在 MTK 内存管理简单总结 4 提到，当内存不足时，可以调用 mmi_frm_appmem_prompt_to_release_mem 来显示后台应用，
+
+让用户去选择关闭后台应用释放内存，下面看一下具体流程
+
+当选者某一后台应用，选择stop 按键时，会触发 mmi_frm_appmem_prompt_screen_stop_highlighted 函数 (触发过程跟MTK的UI事件机制想关，以后分析)。
+
+mmi_frm_appmem_prompt_screen_stop_highlighted
+static void mmi_frm_appmem_prompt_screen_stop_highlighted(void)
+{
+    S32 highlited_item;
+
+    MMI_ASSERT(GetExitScrnID() == SCR_APPMEM_STOP_PROMPT &&
+               g_mmi_frm_appmem_prompt_screen);
+
+    //获得选择的item，也就是list中第几项
+    highlited_item = GetHighlightedItem();
+    MMI_ASSERT(highlited_item < g_mmi_frm_appmem_prompt_screen->num_app);
+    //通过选择的id，获得需要stop的应用id
+    g_mmi_frm_appmem_prompt.app_id_confirm_to_stop = 
+        g_mmi_frm_appmem_prompt_screen->applist[highlited_item].app_id;
+
+    //进入确认界面
+    mmi_frm_appmem_entry_stop_confirm_screen();
+}该函数没有做什么，只是通过选择list 选项 来获得应该被stop的后台应用id。
+
+接着进入到确认界面 ( mmi_frm_appmem_entry_stop_confirm_screen ), 当用户选择yes后，进入到
+
+mmi_frm_appmem_stop_confirm_screen_yes 函数，这个函数执行真正的释放内存动作
+
+static void mmi_frm_appmem_stop_confirm_screen_yes(void)
+{
+    g_mmi_frm_appmem_prompt.stop_state = MMI_FRM_APPMEM_STOP_STATE_WAITING;
+
+    //调用相应应用注册的函数,通知应用却释放内存
+    //这个就是为什么应用要用共享内存前,需要调用 applib_mem_ap_register 来注册的原因
+    applib_mem_ap_stop_app_by_MMI_task(g_mmi_frm_appmem_prompt.app_id_confirm_to_stop);
+
+    MMI_TRACE(MMI_FW_TRC_G1_FRM, MMI_FRM_ASM_STOP_CONFIRM_YES, 
+                g_mmi_frm_appmem_prompt.app_id_confirm_to_stop,
+                g_mmi_frm_appmem_prompt.stop_state);
+    //判断释放是否完成，如果没有完成，那么显示正在处理界面
+    //这里不直接认为回调完应用的就直接认为内存释放了，是因为
+    //应用stop的过程有可能是一个异步操作，这一点需要特别注意
+    if (g_mmi_frm_appmem_prompt.stop_state != MMI_FRM_APPMEM_STOP_STATE_FINISHED)
+    {
+        /* mmi_frm_appmem_stop_finished_handler() was not invoked inside
+           applib_mem_ap_stop_app_by_MMI_task(), we display progressing
+           screen to wait for mmi_frm_appmem_stop_finished_handler() */ 
+        mmi_frm_appmem_entry_progressing_screen();
+    }
+ }注意点：
+
+相应的app 在释放完毕内存后，一定要调用 applib_mem_ap_notify_stop_finished 来通知 ASM内存管理器，内存释放成功或者失败。
+
+该函数最后会调用 mmi_frm_appmem_stop_finished_handler 来通知 内存管理器，内存释放结果。
+
+这套机制，回调函数调来调去，一开始让人有点晕，不过这么设计主要是考虑应用的异步性，有些应用停止是一些异步动作，
+
+需要等到异步动作结束才能知道最后结果。

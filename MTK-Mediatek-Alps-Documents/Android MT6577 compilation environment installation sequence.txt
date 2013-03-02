@@ -1,0 +1,21 @@
+1, 安装wine
+sudo apt-get update
+sudo apt-get install wine
+
+2, 安装java
+sudo add-apt-repository ppa:ferramroberto/java
+sudo apt-get update
+sudo apt-get install sun-java6-jdk sun-java6-plugin
+
+Note: if you get any error then try after follow command
+sudo add-apt-repository ppa:ferramroberto/java
+then run this
+apt-get install python-software-properties
+and now
+sudo add-apt-repository ppa:ferramroberto/java
+
+3, Install build relative packages
+sudo apt-get install git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev libc6-dev libc6-dev-i386 lib32ncurses5-dev ia32-libs x11proto-core-dev libx11-dev lib32readline5-dev lib32z-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.4-multilib mingw32 tofrodos python-markdown libxml2-utils
+
+
+

@@ -1,0 +1,39 @@
+The Huaping how to solve ah LCD wake
+
+Suspend and resume function inside you comment out the test under
+Out of sleep when add a little delay, exit sleep with screen initialization function, at the end of the screen is cleared
+Delay to 500, or Huaping, how to clear the screen?
+
+mtkfb.c
+ tatic void mtkfb_late_resume (struct early_suspend * h)
+ {
+     MSG_FUNC_ENTER ();
+
+     MTKFB_LOG ("[FB Driver] enter late_resume \ n");
+
+     if (down_interruptible (& sem_early_suspend)) {
+         MTKFB_LOG ("[FB Driver] can't get semaphore in mtkfb_late_resume () \ n");
+         return;
+     }
+
+     DISP_CHECK_RET (DISP_PowerEnable (TRUE));
+     DISP_CHECK_RET (DISP_PanelEnable (TRUE));
+ # if defined (MTK_TVOUT_SUPPORT)
+         / / TVOUT_PowerEnable (TRUE);
+ # endif
+
+ # if defined (MTK_HDMI_SUPPORT)
+         / / hdmi_power_on ();
+ # endif
+
+
+         is_early_suspended = FALSE;
+
+
+     up (& sem_early_suspend);
+
+         / * lhh added for outsleep huaping * /
+         mtkfb_update_screen_impl ();
+          mdelay (150);
+         / * lhh added for outsleep huaping * /
+ 

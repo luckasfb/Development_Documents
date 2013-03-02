@@ -1,0 +1,39 @@
+http://www.cshdn.com/thread-1182-1-9.html
+http://www.cshdn.com/forum.php?mod=viewthread&tid=481
+http://www.cshdn.com/thread-1550-1-10.html
+
+OTG
+http://www.cshdn.com/thread-359-1-13.html
+http://www.cshdn.com/forum.php?mod=viewthread&tid=203&extra=&page=2
+http://www.cshdn.com/thread-416-1-17.html
+
+ 
+MT6575 PWM how to configure, why did not the waveform output
+http://www.cshdn.com/thread-881-1-14.html
+
+Modem
+http://www.cshdn.com/thread-305-2-17.html
+
+X and Y corresponding anti?
+http://www.cshdn.com/thread-357-1-7.html
+
+=================
+svn
+http://www.cshdn.com/thread-297-1-7.html
+
+命令行：svn import . https://192.168.100.xxx/svn/alps75.ics -m "alps75.ics origin" --no-ignore
+
+ 群里兄弟推荐：
+ svn import -m "mtk-realease2" /mnt/d/mtk6515-dechen/YZT_MT6515M/ svn://192.168.10.10/YZT_MT6515M --username lxq --password lxq --no-ignore
+===================
+6575 mtk android modem
+http://www.cshdn.com/thread-372-1-1.html
+
+
+Configured RVCT Compiler Environment
+ Modem code ---> make file folder ---> find the project name (such as: 2G: XXXX_ICS_GPRS or 3G: XXX_ICS_HSPA),;
+ Run CMD, CD to the code directory ----> 2G: make XXX_ICS gprs new or 3G: make XXX_ICS hspa new can;
+ Finally get the modem file, see Annex
+===============
+
+

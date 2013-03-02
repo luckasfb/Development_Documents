@@ -1,0 +1,113 @@
+void LCD_Init(void)
+{
+	
+	
+	RST=1;  
+	Delayms(1);
+	
+	RST=0;
+	Delayms(1);
+
+	RST=1;
+	Delayms(10);
+
+
+	//ST7793+HSD3.97 WQ
+//************* Start Initial Sequence **********//
+
+
+
+		Delayms(200);
+		WriteComm(0x0001);
+		WriteData(0x0100);
+		WriteComm(0x0003);
+		WriteData(0x1030);//16bit 565 
+		WriteComm(0x0008);
+		WriteData(0x0808);
+		WriteComm(0x0090);
+		WriteData(0x8000);
+		WriteComm(0x0400);
+		WriteData(0x6200);
+		WriteComm(0x0401);
+		WriteData(0x0001);
+		//-----------------------------------End 
+
+
+
+		WriteComm(0x00ff);
+		WriteData(0x0001);
+		WriteComm(0x0102);
+		WriteData(0x01b0);
+		WriteComm(0x0710);
+		WriteData(0x0016);
+		WriteComm(0x0712);
+		WriteData(0x000f);
+		WriteComm(0x0752);
+		WriteData(0x002f);//
+		WriteComm(0x0724);
+		WriteData(0x001a);
+		WriteComm(0x0754);
+		
+		WriteData(0x0018);
+		 
+
+
+		Delayms (100);
+		//----------------------------------Display 
+
+//Windows 240 X 400----------------------------------------//
+/*
+		WriteComm(0x0210);
+		WriteData(0x0000);
+		WriteComm(0x0211);
+		WriteData(0x00ef);
+		WriteComm(0x0212);
+		WriteData(0x0000);
+		WriteComm(0x0213);
+		WriteData(0x018f);
+		   */
+
+	//	Delayms(10);
+	//-------------------------------------Gamma 
+
+
+		WriteComm(0x0380);
+		WriteData(0x0000);
+		WriteComm(0x0381);
+		WriteData(0x5F10);//5f10
+		WriteComm(0x0382);
+		WriteData(0x0B02);//0b02
+		WriteComm(0x0383);
+		WriteData(0x0614);
+		WriteComm(0x0384);
+		WriteData(0x0111);
+		WriteComm(0x0385);
+		WriteData(0x0000);
+		WriteComm(0x0386);
+		WriteData(0xA90B);//a90b
+		WriteComm(0x0387);
+		WriteData(0x0606);//0606
+		WriteComm(0x0388);
+		WriteData(0x0612);
+		WriteComm(0x0389);
+		WriteData(0x0111);	  
+
+
+//Gamma Setting---------------------------------------------//
+//Setting---------------------------------------------//
+		WriteComm(0x0702);
+		WriteData(0x003b);//003b
+		WriteComm(0x00ff);
+		WriteData(0x0000);
+
+
+//Vcom Setting---------------------------------------------//
+		WriteComm(0x0007);
+		WriteData(0x0100);
+		Delayms(200); //Delay 200ms
+		WriteComm(0x0200);
+		WriteData(0x0000);
+		WriteComm(0x0201);
+		WriteData(0x0000);
+
+}

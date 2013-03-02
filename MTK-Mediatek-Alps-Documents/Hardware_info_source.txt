@@ -1,0 +1,85 @@
+结贴：
+ 为了方便大家，把自己的修改方法贴出来！
+ setup.c
+ static int c_show(struct seq_file *m, void *v)
+ {
+ ....
+ seq_puts(m, "\n");
+         seq_printf(m, "Hardware\t: %s\n", "MT6577");   //增加此行，其中“MT6577”你可以修改成任意字符串
+ //        seq_printf(m, "Hardware\t: %s\n", machine_name);  //屏蔽此行
+         seq_printf(m, "Revision\t: %04x\n", system_rev);
+ ...
+ }
+ util.c
+ void get_hardware_name(char *hardware, unsigned int *revision)
+ {
+ ....
+ if (hw) {
+         x = strstr(hw, ": ");
+         if (x) {
+             x += 2;
+             n = 0;
+             while (*x && !isspace(*x)) {
+                 hardware[n++] = tolower(*x);
+                 x++;
+                 if (n == 31) break;
+             }
+              strcpy(hardware, "mt6575");  //增加此行，即把hardware修改成原来的“MT6575”。如果你是别的平台，请修改成原来的平台。另外，请注意mt6575一定要小写！
+                      hardware[n] = 0;
+         }
+ ...
+     }
+ }
+
+================
+setup.c :kernel\arch\arm\kernel\setup.c
+util.c: system\core\init\util.c 
+
+===============
+开不了机的原因，是ro.hardware被变掉了
+ 如果你修改的CPU型号的长度大于"MT6575"的长度，或者中间有空格，如：MTK 75。则加个限制就行了！
+             if(n < 6 ) //"MT6575"的字符个数！
+                     n = 6;
+             strcpy(hardware, "mt6575");
+===============
+火之 9:49:20 
+ int __init cpu_dev_init(void) 
+ 火之 9:49:31 
+ {
+ int err;
+
+ err = sysdev_class_register(&cpu_sysdev_class);
+ #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+ if (!err)
+ err = sched_create_sysfs_power_savings_entries(&cpu_sysdev_class);
+ #endif
+
+ kobject_create_and_add("cpu1",&cpu_sysdev_class.kset.kobj);
+
+
+
+ return err;
+ } 
+ 火之 9:49:44 
+ 就添加
+ kobject_create_and_add("cpu1",&cpu_sysdev_class.kset.kobj);
+
+ 这个就是改成两个CPU了。
+==================
+我只更改了CPU的型号，比如原来把MT6575改为SMD4X12.
+ 这个实在kernel/arch/arm/kernel/setup.c的c_show()中更改的。
+
+         //seq_printf(m, "Hardware\t: %s\n", machine_name);
+         seq_printf(m, "Hardware\t: %s\n", "SMDK4x12");
+
+ 然后在system/core/init/init.c中把static char hardware[32];改为 static char *hardware="mt6575"就OK了，否则启动启动不了。
+=======================
+不知道你有没有打开CONFIG_SMP
+ 我的这个宏打开后后不起作用。
+ 在mediatek/config/autoconfig/kconfig/project添加CONFIG_SMP=y
+ 然后执行./mk -tee project_name custgen
+ ./mk -tee project_name remake kernel
+ 结果setup.c中被CONFIG_SMP这个宏包着的代码没有被编译。另外kernel/.config中也没有看到这个宏。所以就没有添加成功。
+=====================
+还有就是执行了./mk -tee project_name custgen后在kernel/mediatek-configs中出现了CONFIG_SMP=y 但是mediatek-configs这个文件是怎么用起来的 却没看明白。
+===========

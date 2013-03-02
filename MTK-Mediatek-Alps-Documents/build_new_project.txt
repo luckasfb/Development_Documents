@@ -1,0 +1,54 @@
+    1、\mediatek\config\$project;
+     2、\mediatek\custom\$project;
+     3、\vendor\mediatek\$project;
+     4、\vendor\mediatek\$project\artifacts\out\target\product\$project;
+     5、\vendor\mediatek\$project\artifacts\target.txt modify inside $project;
+     6、\build\target\product\$project.mk;
+     7、\mediatek\custom\ $project\uboot\inc\configs\$project.h(Note: 73 will be diverted here); 
+
+========================
+
+1: ./mk n(r) kernel; ./mk bootimage;当修改kernel相关代码时,要使用此命令,具体如下:
+      alps/kernel/
+      alps/mediatek/platform/mt65xx/kernel/
+      alps/mediatek/source/kernel/
+      alps/mediatek/customer/mt65xx/kernel/
+      alps/mediatek/customer/common/kernel/
+      alps/mediatek/customer/$porject_name$/kernel
+      ......
+ 2: ./mk n pl  当修改preloader相关代码时,要使用此命令,具体如下:
+      alps/mediatek/platform/mt65xx/preloader/
+      alps/mediatek/source/preloader/
+      alps/mediatek/customer/mt65xx/preloader/
+      alps/mediatek/customer/common/preloader/
+      alps/mediatek/customer/$porject_name$/kernle
+      ......
+ 3: ./mk uboot  当修改uboot相关代码时,要使用此命令,具体如下:
+      alps/mediatek/platform/mt65xx/uboot/
+      alps/mediatek/source/uboot/
+      alps/bootable/bootloader/uboot/
+      alps/mediatek/customer/mt65xx/uboot/
+      alps/mediatek/customer/common/buoot/
+      alps/mediatek/customer/$porject_name$/uboot/
+       ......
+ 4: ./mk systemimage 当修改system相关代码时使用此命令,具体如下:
+       alps/frameworks/
+       alps/packages/
+       alps/vendor/
+       alps/hardware/
+       alps/dalvik/
+       ...........
+ 5: ./mk recoverimage  当修改recover相关代码时使用此命令,具体如下:
+       alps/bootable/recovery/
+       alps/mediatek/customer/$project_name$/recovery/
+       ......
+ 6: ./mk factoryimage:  当修改factory相关代码时使用此命令,具体如下:
+       alps/mediatek/customer/$project_name$/factory/
+       alps/mediatek/customer/common/factory/
+       alps/mediatek/source/factory/
+       ......
+ 7: ./mk secroimage  当修改secro相关代码时使用此命令,具体如下:
+       alps/mediatek/source/secro/
+       alps/mediatek/customer/$project_name$/secro/
+      .....
+=========================
